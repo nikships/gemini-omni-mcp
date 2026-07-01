@@ -1,34 +1,18 @@
 [project]
 name = "gemini-omni-mcp"
-version = "1.0.0"
+version = "1.0.1"
 description = "Gemini Omni Flash MCP server for text-to-video, image-to-video, reference-guided video, and conversational video editing"
 readme = "README.md"
 requires-python = ">=3.11"
-keywords = ["mcp", "gemini", "gemini-omni-flash", "video-generation", "ai", "google-ai", "fastmcp", "claude"]
-classifiers = [
-  "Development Status :: 4 - Beta",
-  "Intended Audience :: Developers",
-  "License :: OSI Approved :: MIT License",
-  "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.11",
-  "Programming Language :: Python :: 3.12",
-  "Topic :: Software Development :: Libraries :: Python Modules",
-  "Topic :: Scientific/Engineering :: Artificial Intelligence",
-]
-dependencies = [
-  "fastmcp>=3.0,<4",
-  "google-genai>=2.10.0,<3",
-  "pillow>=10.4.0",
-  "pydantic>=2.0.0",
-  "pydantic-settings>=2.0.0",
-]
-
+keywords = [ "mcp", "gemini", "gemini-omni-flash", "video-generation", "ai", "google-ai", "fastmcp", "claude",]
+classifiers = [ "Development Status :: 4 - Beta", "Intended Audience :: Developers", "License :: OSI Approved :: MIT License", "Programming Language :: Python :: 3", "Programming Language :: Python :: 3.11", "Programming Language :: Python :: 3.12", "Topic :: Software Development :: Libraries :: Python Modules", "Topic :: Scientific/Engineering :: Artificial Intelligence",]
+dependencies = [ "fastmcp>=3.0,<4", "google-genai>=2.10.0,<3", "pillow>=10.4.0", "pydantic>=2.0.0", "pydantic-settings>=2.0.0",]
 [[project.authors]]
 name = "Gemini Omni MCP"
 email = "noreply@example.com"
 
 [build-system]
-requires = ["hatchling"]
+requires = [ "hatchling",]
 build-backend = "hatchling.build"
 
 [project.license]
@@ -41,14 +25,7 @@ Issues = "https://github.com/nikships/gemini-omni-mcp/issues"
 Documentation = "https://github.com/nikships/gemini-omni-mcp/blob/main/README.md"
 
 [project.optional-dependencies]
-dev = [
-  "build>=1.2.0",
-  "ruff>=0.8.0",
-  "mypy>=1.8.0",
-  "pytest>=8.0.0",
-  "pytest-asyncio>=0.24.0",
-  "pytest-cov>=6.0.0",
-]
+dev = [ "build>=1.2.0", "ruff>=0.8.0", "mypy>=1.8.0", "pytest>=8.0.0", "pytest-asyncio>=0.24.0", "pytest-cov>=6.0.0",]
 
 [project.scripts]
 gemini-omni-mcp = "gemini_omni_mcp.server:main"
@@ -65,17 +42,13 @@ disallow_untyped_defs = true
 check_untyped_defs = true
 
 [tool.ruff.lint]
-select = ["E", "W", "F", "I", "N", "UP", "B"]
-ignore = ["E501"]
+select = [ "E", "W", "F", "I", "N", "UP", "B",]
+ignore = [ "E501",]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
-testpaths = ["tests"]
-markers = [
-  "unit: Unit tests",
-  "integration: Integration tests",
-  "network: Tests requiring network access",
-]
+testpaths = [ "tests",]
+markers = [ "unit: Unit tests", "integration: Integration tests", "network: Tests requiring network access",]
 
 [tool.hatch.build.targets.wheel]
-packages = ["gemini_omni_mcp"]
+packages = [ "gemini_omni_mcp",]
