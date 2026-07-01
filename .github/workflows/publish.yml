@@ -1,6 +1,9 @@
 name: Publish to PyPI
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       version_bump:
@@ -26,6 +29,21 @@ jobs:
       - uses: astral-sh/setup-uv@v4
       - name: Install dependencies
         run: uv pip install --system toml packaging twine
+      - name: Determine version bump type
+        id: bump_type
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "type=${{ inputs.version_bump }}" >> $GITHUB_OUTPUT
+          else
+            COMMIT_MSG=$(git log -1 --pretty=%B)
+            if echo "$COMMIT_MSG" | grep -iq "\[major\]"; then
+              echo "type=major" >> $GITHUB_OUTPUT
+            elif echo "$COMMIT_MSG" | grep -iq "\[minor\]"; then
+              echo "type=minor" >> $GITHUB_OUTPUT
+            else
+              echo "type=patch" >> $GITHUB_OUTPUT
+            fi
+          fi
       - name: Bump version
         id: version
         run: |
@@ -37,7 +55,7 @@ jobs:
           with open('pyproject.toml') as f:
               data = toml.load(f)
           current = version.parse(data['project']['version'])
-          bump_type = '${{ inputs.version_bump }}'
+          bump_type = '${{ steps.bump_type.outputs.type }}'
           if bump_type == 'major':
               new_version = f'{current.major + 1}.0.0'
           elif bump_type == 'minor':
@@ -69,3 +87,29 @@ jobs:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
         run: twine upload dist/*
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.version.outputs.new_version }}
+          name: Release v${{ steps.version.outputs.new_version }}
+          body: |
+            ## Changes in v${{ steps.version.outputs.new_version }}
+
+            **Version bump:** ${{ steps.bump_type.outputs.type }}
+            **Previous version:** ${{ steps.version.outputs.old_version }}
+
+            ### Installation
+            ```bash
+            pip install gemini-omni-mcp==${{ steps.version.outputs.new_version }}
+            ```
+
+            Or with uv:
+            ```bash
+            uvx gemini-omni-mcp@${{ steps.version.outputs.new_version }}
+            ```
+
+            See the [README](https://github.com/${{ github.repository }}/blob/main/README.md) for full documentation.
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
