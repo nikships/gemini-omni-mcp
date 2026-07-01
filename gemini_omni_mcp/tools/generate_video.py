@@ -43,6 +43,25 @@ def get_video_service(
     )
 
 
+def build_reference_images(
+    reference_image_paths: list[str] | None,
+    reference_images_data: list[dict[str, str]] | None = None,
+) -> list[dict[str, str]]:
+    """Build Gemini image parts from pre-encoded data and local image paths."""
+    reference_images = reference_images_data[:] if reference_images_data else []
+    if reference_image_paths:
+        for img_path in reference_image_paths:
+            _, image_bytes, mime_type = validate_reference_image(img_path)
+            reference_images.append(
+                {
+                    "type": "image",
+                    "data": base64.b64encode(image_bytes).decode(),
+                    "mime_type": mime_type,
+                }
+            )
+    return reference_images
+
+
 async def generate_video_tool(
     prompt: str,
     task: str | None = None,
@@ -80,17 +99,7 @@ async def generate_video_tool(
         file_poll_timeout=settings.api.file_poll_timeout,
     )
 
-    reference_images = reference_images_data[:] if reference_images_data else []
-    if reference_image_paths:
-        for img_path in reference_image_paths:
-            _, image_bytes, mime_type = validate_reference_image(img_path)
-            reference_images.append(
-                {
-                    "type": "image",
-                    "data": base64.b64encode(image_bytes).decode(),
-                    "mime_type": mime_type,
-                }
-            )
+    reference_images = build_reference_images(reference_image_paths, reference_images_data)
 
     uploaded_video_uri: str | None = None
     uploaded_video_path: Path | None = None

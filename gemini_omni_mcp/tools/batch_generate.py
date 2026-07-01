@@ -1,7 +1,6 @@
 """Batch video generation tool for multiple prompts."""
 
 import asyncio
-import base64
 import json
 import logging
 from typing import Any
@@ -11,10 +10,9 @@ from ..core import (
     coerce_image_paths,
     validate_batch_size,
     validate_prompts_list,
-    validate_reference_image,
     validate_reference_images_count,
 )
-from .generate_video import generate_video_tool
+from .generate_video import build_reference_images, generate_video_tool
 
 logger = logging.getLogger(__name__)
 
@@ -36,18 +34,7 @@ async def batch_generate_videos(
     reference_images_data: list[dict[str, str]] | None = None
     if reference_image_paths:
         validate_reference_images_count(reference_image_paths)
-        reference_images_data = []
-        for img_path in reference_image_paths:
-            _, image_bytes, mime_type = validate_reference_image(img_path)
-            reference_images_data.append(
-                {
-                    "type": "image",
-                    "data": base64.b64encode(image_bytes).decode(),
-                    "mime_type": mime_type,
-                }
-            )
-        if not reference_images_data:
-            reference_images_data = None
+        reference_images_data = build_reference_images(reference_image_paths) or None
 
     settings = get_settings()
     if batch_size is None:

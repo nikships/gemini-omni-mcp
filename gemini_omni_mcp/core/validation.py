@@ -66,7 +66,7 @@ def validate_duration_seconds(duration_seconds: int | None) -> int | None:
         return None
     if not isinstance(duration_seconds, int):
         raise ValidationError("duration_seconds must be an integer")
-    if duration_seconds < MIN_DURATION_SECONDS or duration_seconds > MAX_DURATION_SECONDS:
+    if not MIN_DURATION_SECONDS <= duration_seconds <= MAX_DURATION_SECONDS:
         raise ValidationError(
             f"duration_seconds must be between {MIN_DURATION_SECONDS} and "
             f"{MAX_DURATION_SECONDS}, got {duration_seconds}"
@@ -189,7 +189,7 @@ def validate_base64_image(data: str) -> None:
         decoded = base64.b64decode(data, validate=True)
     except Exception as e:
         raise ValidationError(f"Invalid base64 image data: {e}") from e
-    if len(decoded) == 0:
+    if not decoded:
         raise ValidationError("Decoded image data is empty")
 
 
