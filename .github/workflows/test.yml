@@ -1,0 +1,41 @@
+name: Tests and Linting
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - '.github/workflows/publish.yml'
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.11', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: astral-sh/setup-uv@v4
+      - name: Install dependencies
+        run: uv sync --all-extras
+      - name: Ruff format check
+        run: uv run ruff format --check .
+      - name: Ruff lint
+        run: uv run ruff check .
+      - name: Type check
+        run: uv run mypy gemini_omni_mcp/
+      - name: Tests
+        run: uv run pytest
+      - name: Build
+        run: uv build
+      - name: Import smoke test
+        run: |
+          uv run python -c "import gemini_omni_mcp; print(f'Version: {gemini_omni_mcp.__version__}')"
+          uv run python -c "from gemini_omni_mcp.services import VideoService; print('Services OK')"
+          uv run python -c "from gemini_omni_mcp.tools import generate_video_tool; print('Tools OK')"

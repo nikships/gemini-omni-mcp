@@ -1,0 +1,71 @@
+name: Publish to PyPI
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_bump:
+        description: Version bump type
+        required: false
+        default: patch
+        type: choice
+        options: [major, minor, patch]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: astral-sh/setup-uv@v4
+      - name: Install dependencies
+        run: uv pip install --system toml packaging twine
+      - name: Bump version
+        id: version
+        run: |
+          python << 'PY'
+          import os
+          import toml
+          from packaging import version
+
+          with open('pyproject.toml') as f:
+              data = toml.load(f)
+          current = version.parse(data['project']['version'])
+          bump_type = '${{ inputs.version_bump }}'
+          if bump_type == 'major':
+              new_version = f'{current.major + 1}.0.0'
+          elif bump_type == 'minor':
+              new_version = f'{current.major}.{current.minor + 1}.0'
+          else:
+              new_version = f'{current.major}.{current.minor}.{current.micro + 1}'
+          data['project']['version'] = new_version
+          with open('pyproject.toml', 'w') as f:
+              toml.dump(data, f)
+          init_path = 'gemini_omni_mcp/__init__.py'
+          content = open(init_path).read().replace(f'__version__ = "{current}"', f'__version__ = "{new_version}"')
+          open(init_path, 'w').write(content)
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f'new_version={new_version}\nold_version={current}\n')
+          PY
+      - name: Commit version bump
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add pyproject.toml gemini_omni_mcp/__init__.py
+          git commit -m "Bump version: ${{ steps.version.outputs.old_version }} to ${{ steps.version.outputs.new_version }} [skip ci]"
+          git tag -a "v${{ steps.version.outputs.new_version }}" -m "Release v${{ steps.version.outputs.new_version }}"
+      - name: Push changes
+        run: git push origin main --follow-tags
+      - name: Build package
+        run: uv build
+      - name: Publish to PyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: twine upload dist/*
