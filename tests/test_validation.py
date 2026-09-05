@@ -7,17 +7,18 @@ from gemini_omni_mcp.config.constants import (
     MAX_PROMPT_LENGTH,
     OMNI_TASKS,
     VIDEO_ASPECT_RATIOS,
+    VIDEO_RESOLUTIONS,
 )
 from gemini_omni_mcp.core.exceptions import ValidationError
 from gemini_omni_mcp.core.validation import (
     coerce_image_paths,
     validate_batch_size,
     validate_delivery,
-    validate_duration_seconds,
     validate_input_video,
     validate_model,
     validate_prompt,
     validate_prompts_list,
+    validate_resolution,
     validate_task,
     validate_video_aspect_ratio,
 )
@@ -48,19 +49,14 @@ class TestValidation:
             validate_task("animate")
         assert "Invalid task" in str(excinfo.value)
 
-    @pytest.mark.parametrize("duration", [3, 5, 10])
-    def test_validate_duration_valid(self, duration: int) -> None:
-        assert validate_duration_seconds(duration) == duration
+    @pytest.mark.parametrize("resolution", VIDEO_RESOLUTIONS)
+    def test_validate_resolution_valid(self, resolution: str) -> None:
+        assert validate_resolution(resolution) == resolution
 
-    @pytest.mark.parametrize("duration", [0, 2, 11])
-    def test_validate_duration_invalid_range(self, duration: int) -> None:
+    def test_validate_resolution_invalid(self) -> None:
         with pytest.raises(ValidationError) as excinfo:
-            validate_duration_seconds(duration)
-        assert "duration_seconds must be between" in str(excinfo.value)
-
-    def test_validate_duration_invalid_type(self) -> None:
-        with pytest.raises(ValidationError):
-            validate_duration_seconds("5")  # type: ignore[arg-type]
+            validate_resolution("2160p")
+        assert "Invalid resolution '2160p'" in str(excinfo.value)
 
     @pytest.mark.parametrize("delivery", DELIVERY_OPTIONS)
     def test_validate_delivery_valid(self, delivery: str) -> None:
@@ -87,7 +83,7 @@ class TestValidation:
             validate_prompt(invalid_prompt)
         assert expected in str(excinfo.value)
 
-    @pytest.mark.parametrize("model", ["gemini-omni-flash-preview", "gemini-flash-latest"])
+    @pytest.mark.parametrize("model", ["gemini-omni-1.1-flash", "gemini-flash-latest"])
     def test_validate_model_valid(self, model: str) -> None:
         validate_model(model)
 

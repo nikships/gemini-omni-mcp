@@ -10,10 +10,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from .constants import (
     DEFAULT_ASPECT_RATIO,
     DEFAULT_DELIVERY,
-    DEFAULT_DURATION_SECONDS,
     DEFAULT_ENHANCEMENT_MODEL,
     DEFAULT_MODEL,
     DEFAULT_OUTPUT_DIR,
+    DEFAULT_RESOLUTION,
     DEFAULT_TIMEOUT,
     FILE_POLL_INTERVAL,
     FILE_POLL_TIMEOUT,
@@ -75,9 +75,9 @@ class APIConfig(BaseSettings):
         default=DEFAULT_ASPECT_RATIO,
         description="Default video aspect ratio",
     )
-    default_duration_seconds: int | None = Field(
-        default=DEFAULT_DURATION_SECONDS,
-        description="Optional target video duration in seconds",
+    default_resolution: str = Field(
+        default=DEFAULT_RESOLUTION,
+        description="Default video output resolution (360p, 720p, 1080p, or 4k)",
     )
     default_delivery: str = Field(default=DEFAULT_DELIVERY, description="inline or uri")
 

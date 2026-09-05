@@ -3,20 +3,23 @@
 from pathlib import Path
 
 OMNI_MODELS = {
-    "gemini-omni-flash-preview": "gemini-omni-flash-preview",
+    "gemini-omni-1.1-flash": "gemini-omni-1.1-flash",
     "gemini-flash-latest": "gemini-flash-latest",
 }
 
 GEMINI_MODELS = OMNI_MODELS
 ALL_MODELS = OMNI_MODELS
 
-DEFAULT_MODEL = "gemini-omni-flash-preview"
+DEFAULT_MODEL = "gemini-omni-1.1-flash"
 DEFAULT_ENHANCEMENT_MODEL = "gemini-flash-latest"
 
 VIDEO_ASPECT_RATIOS = ["16:9", "9:16"]
 DEFAULT_ASPECT_RATIO = "16:9"
 
-OMNI_TASKS = ["text_to_video", "image_to_video", "reference_to_video", "edit"]
+VIDEO_RESOLUTIONS = ["360p", "720p", "1080p", "4k"]
+DEFAULT_RESOLUTION = "720p"
+
+OMNI_TASKS = ["text_to_video", "image_to_video", "reference_to_video", "edit", "extend"]
 DELIVERY_OPTIONS = ["inline", "uri"]
 DEFAULT_DELIVERY = "uri"
 
@@ -29,10 +32,6 @@ IMAGE_MIME_TYPES = {
     "png": "image/png",
     "webp": "image/webp",
 }
-
-MIN_DURATION_SECONDS = 3
-MAX_DURATION_SECONDS = 10
-DEFAULT_DURATION_SECONDS: int | None = None
 
 MAX_REFERENCE_IMAGES = 6
 MAX_PROMPT_LENGTH = 8192

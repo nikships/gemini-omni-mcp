@@ -10,7 +10,7 @@ def test_video_result_save(tmp_path: Path) -> None:
     result = VideoResult(
         video_bytes=b"mp4 bytes",
         prompt="A cinematic test video",
-        model="gemini-omni-flash-preview",
+        model="gemini-omni-1.1-flash",
         interaction_id="v1_test",
     )
 
@@ -23,7 +23,7 @@ def test_video_result_save(tmp_path: Path) -> None:
 
 @pytest.mark.unit
 def test_video_result_save_custom_filename(tmp_path: Path) -> None:
-    result = VideoResult(b"video", "prompt", "gemini-omni-flash-preview")
+    result = VideoResult(b"video", "prompt", "gemini-omni-1.1-flash")
 
     output = result.save(tmp_path, "custom.mp4")
 

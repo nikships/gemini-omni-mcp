@@ -124,7 +124,7 @@ class VideoService:
             "delivery": response.get("delivery"),
             "task": response.get("task"),
             "aspect_ratio": response.get("aspect_ratio"),
-            "duration_seconds": response.get("duration_seconds"),
+            "resolution": response.get("resolution"),
         }
         return VideoResult(
             video_bytes=video_bytes,

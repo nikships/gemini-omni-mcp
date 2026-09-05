@@ -12,15 +12,14 @@ from ..config.constants import (
     ALL_MODELS,
     DELIVERY_OPTIONS,
     IMAGE_MIME_TYPES,
-    MAX_DURATION_SECONDS,
     MAX_IMAGE_SIZE_BYTES,
     MAX_INPUT_VIDEO_SIZE_BYTES,
     MAX_PROMPT_LENGTH,
     MAX_REFERENCE_IMAGES,
-    MIN_DURATION_SECONDS,
     OMNI_TASKS,
     VIDEO_ASPECT_RATIOS,
     VIDEO_EXTENSIONS,
+    VIDEO_RESOLUTIONS,
 )
 from .exceptions import ValidationError
 
@@ -60,18 +59,12 @@ def validate_task(task: str | None) -> str | None:
     return task
 
 
-def validate_duration_seconds(duration_seconds: int | None) -> int | None:
-    """Validate and return an optional target video duration."""
-    if duration_seconds is None:
-        return None
-    if not isinstance(duration_seconds, int):
-        raise ValidationError("duration_seconds must be an integer")
-    if not MIN_DURATION_SECONDS <= duration_seconds <= MAX_DURATION_SECONDS:
-        raise ValidationError(
-            f"duration_seconds must be between {MIN_DURATION_SECONDS} and "
-            f"{MAX_DURATION_SECONDS}, got {duration_seconds}"
-        )
-    return duration_seconds
+def validate_resolution(resolution: str) -> str:
+    """Validate and return a Gemini Omni video output resolution."""
+    if resolution not in VIDEO_RESOLUTIONS:
+        available = ", ".join(VIDEO_RESOLUTIONS)
+        raise ValidationError(f"Invalid resolution '{resolution}'. Available: {available}")
+    return resolution
 
 
 def validate_delivery(delivery: str) -> str:

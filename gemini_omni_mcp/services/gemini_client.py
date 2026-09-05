@@ -50,7 +50,7 @@ class GeminiVideoClient:
         reference_images: list[dict[str, str]] | None = None,
         uploaded_video_uri: str | None = None,
         aspect_ratio: str = "16:9",
-        duration_seconds: int | None = None,
+        resolution: str = "720p",
         delivery: str = DEFAULT_DELIVERY,
         previous_interaction_id: str | None = None,
         timeout: int | None = None,
@@ -68,10 +68,9 @@ class GeminiVideoClient:
             response_format: dict[str, Any] = {
                 "type": "video",
                 "aspect_ratio": aspect_ratio,
+                "resolution": resolution,
                 "delivery": delivery,
             }
-            if duration_seconds is not None:
-                response_format["duration"] = f"{duration_seconds}s"
 
             body: dict[str, Any] = {
                 "model": model_id,
@@ -85,10 +84,12 @@ class GeminiVideoClient:
                 body["previous_interaction_id"] = previous_interaction_id
 
             logger.info(
-                "Generating video: model=%s task=%s aspect_ratio=%s delivery=%s references=%s",
+                "Generating video: model=%s task=%s aspect_ratio=%s resolution=%s delivery=%s "
+                "references=%s",
                 model_id,
                 task,
                 aspect_ratio,
+                resolution,
                 delivery,
                 len(reference_images or []),
             )
@@ -114,7 +115,7 @@ class GeminiVideoClient:
                     "model": model,
                     "task": task,
                     "aspect_ratio": aspect_ratio,
-                    "duration_seconds": duration_seconds,
+                    "resolution": resolution,
                     "delivery": delivery,
                 }
             )

@@ -21,7 +21,7 @@ async def batch_generate_videos(
     prompts: list[str],
     task: str | None = None,
     aspect_ratio: str | None = None,
-    duration_seconds: int | None = None,
+    resolution: str | None = None,
     reference_image_paths: str | list[str] | None = None,
     batch_size: int | None = None,
     delivery: str | None = None,
@@ -58,7 +58,7 @@ async def batch_generate_videos(
                 prompt=prompt,
                 task=task,
                 aspect_ratio=aspect_ratio,
-                duration_seconds=duration_seconds,
+                resolution=resolution,
                 reference_image_paths=None,
                 reference_images_data=reference_images_data,
                 delivery=delivery,
@@ -111,7 +111,7 @@ def register_batch_generate_tool(mcp_server: Any) -> None:
         prompts: list[str],
         task: str | None = None,
         aspect_ratio: str | None = None,
-        duration_seconds: int | None = None,
+        resolution: str | None = None,
         reference_image_paths: str | list[str] | None = None,
         batch_size: int | None = None,
         delivery: str | None = None,
@@ -120,7 +120,7 @@ def register_batch_generate_tool(mcp_server: Any) -> None:
         """
         Generate multiple Gemini Omni Flash videos in conservative parallel batches.
 
-        Use for storyboards, aspect-ratio comparisons, or reference-guided variations.
+        Use for storyboards, aspect-ratio or resolution comparisons, or reference-guided variations.
         Batch size defaults to configuration and is capped at 4 because video jobs are long.
         The JSON response includes per-prompt video.path, interaction_id, metadata, and errors.
         """
@@ -129,7 +129,7 @@ def register_batch_generate_tool(mcp_server: Any) -> None:
                 prompts=prompts,
                 task=task,
                 aspect_ratio=aspect_ratio,
-                duration_seconds=duration_seconds,
+                resolution=resolution,
                 reference_image_paths=reference_image_paths,
                 batch_size=batch_size,
                 delivery=delivery,

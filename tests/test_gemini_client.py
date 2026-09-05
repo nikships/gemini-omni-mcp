@@ -84,11 +84,12 @@ async def test_generate_video_inline_output(monkeypatch: pytest.MonkeyPatch) -> 
     assert result["video_bytes"] == b"video"
     assert result["interaction_id"] == "v1_inline"
     call = interactions.calls[0]
-    assert call["model"] == "gemini-omni-flash-preview"
+    assert call["model"] == "gemini-omni-1.1-flash"
     assert call["input"] == "A marble rolls."
     assert call["response_format"] == {
         "type": "video",
         "aspect_ratio": "16:9",
+        "resolution": "720p",
         "delivery": "inline",
     }
     assert call["generation_config"] == {"video_config": {"task": "text_to_video"}}
@@ -166,7 +167,7 @@ async def test_steps_fallback_and_previous_interaction_id(monkeypatch: pytest.Mo
 
 @pytest.mark.asyncio
 @pytest.mark.integration
-async def test_reference_images_and_duration_shape(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_reference_images_and_resolution_shape(monkeypatch: pytest.MonkeyPatch) -> None:
     response = SimpleNamespace(
         id="v1_ref",
         output_video=SimpleNamespace(data="cmVm", mime_type="video/mp4"),
@@ -182,7 +183,7 @@ async def test_reference_images_and_duration_shape(monkeypatch: pytest.MonkeyPat
             {"type": "image", "data": "a", "mime_type": "image/jpeg"},
             {"type": "image", "data": "b", "mime_type": "image/png"},
         ],
-        duration_seconds=10,
+        resolution="1080p",
     )
 
     call = interactions.calls[0]
@@ -191,7 +192,7 @@ async def test_reference_images_and_duration_shape(monkeypatch: pytest.MonkeyPat
         {"type": "image", "data": "b", "mime_type": "image/png"},
         {"type": "text", "text": "Animate <IMAGE_REF_0> with <IMAGE_REF_1>."},
     ]
-    assert call["response_format"]["duration"] == "10s"
+    assert call["response_format"]["resolution"] == "1080p"
 
 
 @pytest.mark.asyncio

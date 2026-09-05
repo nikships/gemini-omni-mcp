@@ -51,7 +51,7 @@ def register_video_prompts(mcp_server: Any) -> None:
         )
         return (
             "Call `generate_video` with "
-            f"prompt: {prompt!r}, aspect_ratio: {aspect_ratio!r}, duration_seconds: 10."
+            f"prompt: {prompt!r}, aspect_ratio: {aspect_ratio!r}, resolution: '1080p'."
         )
 
     @mcp_server.prompt()

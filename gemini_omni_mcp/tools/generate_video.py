@@ -12,11 +12,11 @@ from ..core import (
     ValidationError,
     coerce_image_paths,
     validate_delivery,
-    validate_duration_seconds,
     validate_input_video,
     validate_prompt,
     validate_reference_image,
     validate_reference_images_count,
+    validate_resolution,
     validate_task,
     validate_video_aspect_ratio,
 )
@@ -66,7 +66,7 @@ async def generate_video_tool(
     prompt: str,
     task: str | None = None,
     aspect_ratio: str | None = None,
-    duration_seconds: int | None = None,
+    resolution: str | None = None,
     reference_image_paths: str | list[str] | None = None,
     reference_images_data: list[dict[str, str]] | None = None,
     input_video_path: str | None = None,
@@ -82,9 +82,7 @@ async def generate_video_tool(
     validate_prompt(prompt)
     task = validate_task(task)
     aspect_ratio = validate_video_aspect_ratio(aspect_ratio or settings.api.default_aspect_ratio)
-    duration_seconds = validate_duration_seconds(
-        duration_seconds if duration_seconds is not None else settings.api.default_duration_seconds
-    )
+    resolution = validate_resolution(resolution or settings.api.default_resolution)
     delivery = validate_delivery(delivery or settings.api.default_delivery)
 
     if reference_image_paths:
@@ -119,6 +117,8 @@ async def generate_video_tool(
 
     if task == "edit" and not (previous_interaction_id or uploaded_video_uri):
         raise ValidationError("edit task requires previous_interaction_id or input_video_path")
+    if task == "extend" and not (previous_interaction_id or uploaded_video_uri):
+        raise ValidationError("extend task requires previous_interaction_id or input_video_path")
     if task == "image_to_video" and len(reference_images) != 1:
         raise ValidationError("image_to_video task requires exactly one reference image")
     if task == "reference_to_video" and not reference_images:
@@ -132,7 +132,7 @@ async def generate_video_tool(
         reference_images=reference_images or None,
         uploaded_video_uri=uploaded_video_uri,
         aspect_ratio=aspect_ratio,
-        duration_seconds=duration_seconds,
+        resolution=resolution,
         delivery=delivery,
         previous_interaction_id=previous_interaction_id,
     )
@@ -156,7 +156,7 @@ async def generate_video_tool(
         "metadata": {
             "task": task,
             "aspect_ratio": aspect_ratio,
-            "duration_seconds": duration_seconds,
+            "resolution": resolution,
             "delivery": delivery,
             "reference_images": len(reference_images),
             "input_video_path": str(uploaded_video_path) if uploaded_video_path else None,
@@ -178,7 +178,7 @@ def register_generate_video_tool(mcp_server: Any) -> None:
         prompt: str,
         task: str | None = None,
         aspect_ratio: str | None = None,
-        duration_seconds: int | None = None,
+        resolution: str | None = None,
         reference_image_paths: str | list[str] | None = None,
         input_video_path: str | None = None,
         delivery: str | None = None,
@@ -186,23 +186,25 @@ def register_generate_video_tool(mcp_server: Any) -> None:
         enhance_prompt: bool = False,
     ) -> str:
         """
-        Generate or edit MP4 videos with Gemini Omni Flash.
+        Generate or edit MP4 videos with Gemini Omni Flash (gemini-omni-1.1-flash).
 
         Capabilities:
         - text_to_video: prompt-only video with generated audio.
         - image_to_video: one reference image plus motion and camera direction.
         - reference_to_video: multiple reference images for subjects, style, or props.
         - edit: use previous_interaction_id or input_video_path to edit existing video.
+        - extend: continue a video from previous_interaction_id or an uploaded MP4,
+          appending a 3-10 second seamless continuation (repeat up to 40s total).
 
         Parameters:
         - prompt: Describe the scene, motion, camera movement, lighting, mood, and audio.
-        - task: text_to_video, image_to_video, reference_to_video, or edit. If omitted, inferred.
+        - task: text_to_video, image_to_video, reference_to_video, edit, or extend. If omitted, inferred.
         - aspect_ratio: 16:9 landscape or 9:16 portrait.
-        - duration_seconds: Optional 3 to 10 second target. If the API rejects this preview field, retry without it.
-        - reference_image_paths: Up to 6 local images. Use <FIRST_FRAME> or <IMAGE_REF_N> tags in the prompt for control.
-        - input_video_path: Local MP4 to upload and edit through the Files API.
+        - resolution: 360p, 720p (default), 1080p, or 4k. Values above 720p are upscaled.
+        - reference_image_paths: Up to 6 local images. Use <FIRST_FRAME>, <LAST_FRAME>, or <IMAGE_REF_N> tags in the prompt for control.
+        - input_video_path: Local MP4 (10s or less) to upload and edit or extend through the Files API.
         - delivery: uri is recommended for generated MP4 files; inline is supported for smaller payloads.
-        - previous_interaction_id: Continue editing a prior generated video.
+        - previous_interaction_id: Continue editing or extending a prior generated video.
         - enhance_prompt: Optional, default false. For edits, simple prompts usually work better.
 
         Prompt tips:
@@ -210,13 +212,14 @@ def register_generate_video_tool(mcp_server: Any) -> None:
         - Include explicit audio direction such as "gentle ambient room tone, no dialogue".
         - For edits, say "Keep everything else the same".
         - Timing cues like [0-3s], [3-6s], [6-10s] are supported.
+        - For first/last-frame interpolation, pass two images and use <FIRST_FRAME> <LAST_FRAME> tags.
 
         Limitations:
-        - Output is MP4, currently 720p at 24fps, SynthID-watermarked, and preview quality.
+        - Output is MP4, 3-10s clips at 24fps (360p/720p/1080p/4k), SynthID-watermarked.
         - System instructions, temperature, top_p, stop sequences, negative_prompt, voice edits, YouTube sources, and multi-video reasoning are unsupported.
-        - Uploaded-video editing is unavailable in some regions.
+        - Uploaded-video editing and extension are unavailable in some regions.
 
-        Returns JSON including video.path, interaction_id, task, aspect_ratio, delivery, size, and URI metadata.
+        Returns JSON including video.path, interaction_id, task, aspect_ratio, resolution, delivery, size, and URI metadata.
         After success, open video.path with the native OS video viewer.
         """
         try:
@@ -224,7 +227,7 @@ def register_generate_video_tool(mcp_server: Any) -> None:
                 prompt=prompt,
                 task=task,
                 aspect_ratio=aspect_ratio,
-                duration_seconds=duration_seconds,
+                resolution=resolution,
                 reference_image_paths=reference_image_paths,
                 input_video_path=input_video_path,
                 delivery=delivery,
