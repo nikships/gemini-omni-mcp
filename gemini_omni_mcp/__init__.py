@@ -1,6 +1,6 @@
 """Gemini Omni MCP Server."""
 
-__version__ = "2.0.0"
+__version__ = "2.0.1"
 __author__ = "Gemini Omni MCP"
 
 from .config import get_settings
