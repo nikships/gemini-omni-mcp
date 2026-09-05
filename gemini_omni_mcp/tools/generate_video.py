@@ -210,10 +210,14 @@ def register_generate_video_tool(mcp_server: Any) -> None:
         - enhance_prompt: Optional, default false. For edits, simple prompts usually work better.
 
         Prompt tips:
-        - Ask for "single continuous shot" and "no scene cuts" when you want one scene.
+        - By default Omni generates a few different shots with cuts, crafting a narrative from the prompt.
+          Ask for "single continuous shot, no scene cuts" when you want one unbroken scene.
+        - Stage your own cuts with timing language: "Every 2s cut to a new frame", rapid-fire sequences,
+          or timecode lines like [0-3s], [3-6s], [6-10s].
         - Include explicit audio direction such as "gentle ambient room tone, no dialogue".
-        - For edits, say "Keep everything else the same".
-        - Timing cues like [0-3s], [3-6s], [6-10s] are supported.
+        - For edits, keep prompts simple and say "Keep everything else the same".
+        - When extending, 0s in timecodes refers to the start of the extended part, and you can cut to
+          a new scene with the same characters ("Show the same characters in the next scene").
         - For first/last-frame interpolation, pass two images and use <FIRST_FRAME> <LAST_FRAME> tags.
 
         Limitations:
