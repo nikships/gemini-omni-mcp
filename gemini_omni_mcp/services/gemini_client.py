@@ -78,7 +78,10 @@ class GeminiVideoClient:
                 "response_format": response_format,
                 "store": True,
             }
-            if task and task != "edit":
+            # The API rejects previous_interaction_id together with video_config.task
+            # ("previous_interaction_id is not allowed when video task is set"), so
+            # multi-turn edit/extend rely on prompt-based inference instead.
+            if task and task != "edit" and not previous_interaction_id:
                 body["generation_config"] = {"video_config": {"task": task}}
             if previous_interaction_id:
                 body["previous_interaction_id"] = previous_interaction_id

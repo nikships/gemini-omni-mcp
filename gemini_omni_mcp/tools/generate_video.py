@@ -199,6 +199,8 @@ def register_generate_video_tool(mcp_server: Any) -> None:
         Parameters:
         - prompt: Describe the scene, motion, camera movement, lighting, mood, and audio.
         - task: text_to_video, image_to_video, reference_to_video, edit, or extend. If omitted, inferred.
+          Prefer omitting it for edit and extend: the API rejects an explicit task together with
+          previous_interaction_id, so multi-turn edit/extend are prompt-based (e.g. "Extend this video").
         - aspect_ratio: 16:9 landscape or 9:16 portrait.
         - resolution: 360p, 720p (default), 1080p, or 4k. Values above 720p are upscaled.
         - reference_image_paths: Up to 6 local images. Use <FIRST_FRAME>, <LAST_FRAME>, or <IMAGE_REF_N> tags in the prompt for control.

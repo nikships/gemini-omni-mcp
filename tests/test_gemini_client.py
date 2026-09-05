@@ -167,6 +167,55 @@ async def test_steps_fallback_and_previous_interaction_id(monkeypatch: pytest.Mo
 
 @pytest.mark.asyncio
 @pytest.mark.integration
+async def test_extend_with_previous_interaction_id_omits_video_config(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    response = SimpleNamespace(
+        id="v1_extend",
+        output_video=SimpleNamespace(data="ZXh0", mime_type="video/mp4"),
+        steps=[],
+    )
+    interactions, _ = patch_client(monkeypatch, response)
+    client = GeminiVideoClient("key")
+
+    await client.generate_video(
+        "Extend this video: the camera keeps drifting past the skyline.",
+        task="extend",
+        previous_interaction_id="v1_previous",
+    )
+
+    call = interactions.calls[0]
+    assert call["previous_interaction_id"] == "v1_previous"
+    assert "generation_config" not in call
+
+
+@pytest.mark.asyncio
+@pytest.mark.integration
+async def test_extend_with_uploaded_video_sets_video_config(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    response = SimpleNamespace(
+        id="v1_extend_upload",
+        output_video=SimpleNamespace(data="dXBsb2Fk", mime_type="video/mp4"),
+        steps=[],
+    )
+    interactions, _ = patch_client(monkeypatch, response)
+    client = GeminiVideoClient("key")
+
+    await client.generate_video(
+        "Continue the scene.",
+        task="extend",
+        uploaded_video_uri="files/uploaded",
+    )
+
+    call = interactions.calls[0]
+    assert call["generation_config"] == {"video_config": {"task": "extend"}}
+    assert call["input"][0] == {"type": "document", "uri": "files/uploaded"}
+    assert "previous_interaction_id" not in call
+
+
+@pytest.mark.asyncio
+@pytest.mark.integration
 async def test_reference_images_and_resolution_shape(monkeypatch: pytest.MonkeyPatch) -> None:
     response = SimpleNamespace(
         id="v1_ref",

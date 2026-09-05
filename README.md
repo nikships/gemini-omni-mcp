@@ -150,6 +150,7 @@ Everything is configured through environment variables (or a local `.env`):
 - Ask for a **"single continuous shot"** and **"no scene cuts"** for one-scene outputs.
 - Always include **audio direction**, for example "gentle ambient sound, no dialogue".
 - For edits, keep the prompt short and add **"Keep everything else the same"**.
+- To lengthen a video, say **"Extend this video"** with `previous_interaction_id` or an uploaded clip of 10s or less; each turn adds 3-10s, up to 40s total. Leave `task` unset — the API rejects an explicit task together with `previous_interaction_id`.
 - Use `<FIRST_FRAME>` and `<IMAGE_REF_N>` tags to bind reference-image roles.
 - Timing cues like `[0-3s]`, `[3-6s]`, and `[6-10s]` work well.
 
